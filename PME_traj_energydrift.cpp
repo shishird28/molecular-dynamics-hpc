@@ -22,39 +22,39 @@ class ewald {
         // physical parameters
         double alpha = 0.2;
         int N_cell = 4;
-	int gspace = 10;
-	ptrdiff_t N = 2*N_cell*gspace; 
+		int gspace = 10;
+		ptrdiff_t N = 2*N_cell*gspace; 
         //ptrdiff_t N = 256;
-	ptrdiff_t N0 = N, N1 = N, N2 = N;
+		ptrdiff_t N0 = N, N1 = N, N2 = N;
         bool ignorereal = false;
-	double a0 = 0.529177;
-	double a = 5.64 / a0;
-	double L = a*N_cell;
+		double a0 = 0.529177;
+		double a = 5.64 / a0;
+		double L = a*N_cell;
         double rc = 1.5*a;
-	double ds = L / N0;
+		double ds = L / N0;
         double V_cell = pow(L,3);
         double k = 1; // Coulomb factor converted to au
         
-	// precomputed factors
-	double pref = 1.0 / (V_cell*M_PI);
+		// precomputed factors
+		double pref = 1.0 / (V_cell*M_PI);
         double pre_alpha = (M_PI*M_PI) / (alpha * alpha);	
-	double exp_pref = (2.0 * alpha / sqrt(M_PI));
-	double rc2 = rc*rc;
-	double energy = 0;
-	double energy_local = 0;
-	double rec_energy, rec_local = 0;
-	double LJ_energy, LJ_local = 0;
-	double real_energy, real_local = 0;
-	double self_energy, self_local = 0;
+		double exp_pref = (2.0 * alpha / sqrt(M_PI));
+		double rc2 = rc*rc;
+		double energy = 0;
+		double energy_local = 0;
+		double rec_energy, rec_local = 0;
+		double LJ_energy, LJ_local = 0;
+		double real_energy, real_local = 0;
+		double self_energy, self_local = 0;
 
 	// vectors
         vector<vector<double>> cell = {};
-	vector<double> q_list = {};
+		vector<double> q_list = {};
         vector<double> m_list = {};
-	int total;
+		int total;
         int r_i;
 	
-	vector<vector<int>> neighbour_list;
+		vector<vector<int>> neighbour_list;
 
         MPI_Comm comm;
         int rank, size;
@@ -63,16 +63,16 @@ class ewald {
         ptrdiff_t alloc_local;
         fftw_complex *dataout, *dataxin, *datayin, *datazin;
         double *datain, *dataxout, *datayout, *datazout;
-	fftw_plan plan, planx, plany, planz;
-	int N2_half = N2/2 + 1;
-	int N2_pad  = 2 * N2_half;
+		fftw_plan plan, planx, plany, planz;
+		int N2_half = N2/2 + 1;
+		int N2_pad  = 2 * N2_half;
 
         ewald(MPI_Comm c = MPI_COMM_WORLD)
        	    : comm(c)
 	{
 
             // copy the lattice vectors into a supercell
-	    		double charge = 1;
+	    	double charge = 1;
 			double mass = 1;
 			double N_grid = 2 * N_cell;
 			for (int i = 0; i < N_grid; ++i) {
@@ -99,25 +99,6 @@ class ewald {
             			}
            		    }
         		}
-   /*         for (int i = 0; i < N_cell; i++) {
-                for (int j = 0; j < N_cell; j++) {
-                    for (int k = 0; k < N_cell; k++) {
-                        double ax = a*i;
-                        double ay = a*j;
-                        double az = a*k;
-                        for (const auto &q : Cl_lattice_vec) {
-                            cell.push_back({q[0]+ax, q[1]+ay, q[2]+az});
-                            q_list.push_back(-1.0);
-                            m_list.push_back(1.0);
-			}
-                        for (const auto &q : Na_lattice_vec) {
-                            cell.push_back({q[0]+ax, q[1]+ay, q[2]+az});
-                            q_list.push_back(1.0);
-			    m_list.push_back(1.0);
-                        }
-                    }
-                }
-            } */
 
 	    total = cell.size();
 	    neighbour_list.assign(total, std::vector<int>());
@@ -138,11 +119,8 @@ class ewald {
 
             // choose ion in middle of supercell
             int i0 = N_cell, j0 = N_cell, k0 = N_cell;
-            //size_t cellIndex = 4*N*N*N + 6*N*N + 3*N; // since there are N^2 j,k pairs for each i and N k pairs for each j
             size_t cellIndex = 4*i0*N_cell*N_cell + 2*j0*N_cell + k0;
-	    //size_t cellIndex = 0.5*i0*N_cell*N_cell + 0.5*j0*N_cell + 0.5*k0;
-	    r_i = cellIndex*1; // multiply by 8 as there are 8 lattice vectors
-            //printf("chosen ion is [%8.3f,%8.3f,%8.3f] \n", cell[r_i][0]/a,cell[r_i][1]/a,cell[r_i][2]/a);
+	    	r_i = cellIndex*1; // multiply by 8 as there are 8 lattice vectors
         
  
         MPI_Comm_rank(comm, &rank);
@@ -209,16 +187,16 @@ class ewald {
     ~ewald() {
         fftw_destroy_plan(plan);
         fftw_destroy_plan(planx);
-	fftw_destroy_plan(plany);
-	fftw_destroy_plan(planz);
+		fftw_destroy_plan(plany);
+		fftw_destroy_plan(planz);
         fftw_free(datain);
-	fftw_free(dataout);
+		fftw_free(dataout);
         fftw_free(dataxin);
         fftw_free(datayin);
-        fftw_free(datazin);
-	fftw_free(dataxout);
-	fftw_free(datayout);
-	fftw_free(datazout);
+	    fftw_free(datazin);
+		fftw_free(dataxout);
+		fftw_free(datayout);
+		fftw_free(datazout);
     }
 
 
@@ -319,12 +297,6 @@ class ewald {
         if (x < 0) x += L;
         return x;
     }
-    inline double wrap_pos_into_box2(double x, double L) {
-        // Shift into [0, L)
-	if (x>L) x = L;
-        if (x < 0) x = 0.0;
-        return x;
-    }    
     inline double min_image_delta(double xi, double xj, double L) {
         double dx = xi - xj;
         return dx - round(dx / L) * L;
@@ -334,24 +306,12 @@ class ewald {
     }
 
     void PME(vector<vector<double>> pos) {
-        //cell = pos;
         size_t n = total;
-        
-	// create a wrapped copy of cell so G.r uses positions in [-L/2,L/2]
-       /* vector<vector<double>> cell_wrapped = cell;
-        for (size_t idx = 0; idx < cell_wrapped.size(); ++idx) {
-            cell_wrapped[idx][0] = wrap_pos_into_box(cell_wrapped[idx][0], L);
-            cell_wrapped[idx][1] = wrap_pos_into_box(cell_wrapped[idx][1], L);
-            cell_wrapped[idx][2] = wrap_pos_into_box(cell_wrapped[idx][2], L);
-        }*/ 
-	//cell = cell_wrapped;
-        // assign charges to grid
         charge_assign(pos);
-	//charge_assign(cell);
 
         // Perform FFT
         fftw_execute(plan);
-	rec_local = 0;
+		rec_local = 0;
         // reciprocal factor
         for (ptrdiff_t i = 0; i < local_n0; ++i) {
             ptrdiff_t global_i = i + local_0_start;
@@ -391,7 +351,7 @@ class ewald {
                         datazin[ind_local][0] = K * 2*M_PI * Gz * dataout[ind_local][1];
                         datazin[ind_local][1] = -K * 2*M_PI * Gz * dataout[ind_local][0];			
                         
-		        double rho2 = dataout[ind_local][0]*dataout[ind_local][0] + dataout[ind_local][1]*dataout[ind_local][1];
+		    double rho2 = dataout[ind_local][0]*dataout[ind_local][0] + dataout[ind_local][1]*dataout[ind_local][1];
 			double mult = (k == 0 || k == N2_half - 1) ? 0.5 : 1.0;
 			rec_local += mult * K * rho2;
 			
@@ -427,8 +387,8 @@ class ewald {
             cell_wrapped[idx][1] = wrap_pos_into_box(cell_wrapped[idx][1], L);
             cell_wrapped[idx][2] = wrap_pos_into_box(cell_wrapped[idx][2], L);
         }
-	//cell = cell_wrapped;
-	//vector<double> energy_local(rank, 0.0);
+
+	// all energy contributions
 	energy = 0.0;
 	energy_local = 0.0;
 	rec_local = 0.0;
@@ -441,19 +401,19 @@ class ewald {
 	
 	PME(cell_wrapped);
 	size_t n = total;
-        vector<vector<double>> F_list;
-        F_list.assign(n, vector<double>(3, 0.0));
+    vector<vector<double>> F_list;
+    F_list.assign(n, vector<double>(3, 0.0));
 	vector<double> F_flat_local(3 * n, 0.0);
 	int start = rank * total / size;
 	int end = (rank + 1) * total / size;
+		
 	// real space sum
 	for (int i=start; i<end; ++i) {
 	    const auto &p_i = cell[i];
-            double q_i = q_list[i];
-            double m_i = m_list[i];
+        double q_i = q_list[i];
+        double m_i = m_list[i];
 
-            //for (int j=0; j<n; ++j) {
-            for (int j : neighbour_list[i]) {
+        for (int j : neighbour_list[i]) {
 	        if (ignorereal) continue;
                 if (i==j) continue;
                 const auto &p_j = cell[j];
@@ -462,10 +422,10 @@ class ewald {
                 double dy = min_image_delta(p_i[1], p_j[1], L);
                 double dz = min_image_delta(p_i[2], p_j[2], L);		
 		
-		double r2 = dx*dx + dy*dy + dz*dz;
-                if (r2>rc2) continue;
-		if (r2<1e-10) continue;
-		double r = sqrt(r2);
+				double r2 = dx*dx + dy*dy + dz*dz;
+		        if (r2>rc2) continue;
+				if (r2<1e-10) continue;
+				double r = sqrt(r2);
 
                 double q_j = q_list[j];
                 double m_j = m_list[j];
@@ -513,11 +473,11 @@ class ewald {
 		    //energy_local += pair_LJ;		   
 
 		    Fx += unit_r[0] * LJ_mag;
-                    Fy += unit_r[1] * LJ_mag;
-                    Fz += unit_r[2] * LJ_mag;
+            Fy += unit_r[1] * LJ_mag;
+            Fz += unit_r[2] * LJ_mag;
                 }
 
-                F_flat_local[3*i + 0] += Fx/m_i;
+        F_flat_local[3*i + 0] += Fx/m_i;
 		F_flat_local[3*i + 1] += Fy/m_i;
 		F_flat_local[3*i + 2] += Fz/m_i;
 	    }
@@ -525,14 +485,14 @@ class ewald {
 
         // reciprocal space part
 	for (int i = 0; i < n; ++i) {
-            double px = cell_wrapped[i][0]/ds, py = cell_wrapped[i][1]/ds, pz = cell_wrapped[i][2]/ds;
+    	double px = cell_wrapped[i][0]/ds, py = cell_wrapped[i][1]/ds, pz = cell_wrapped[i][2]/ds;
 	    //int ix = round(px/ds), iy = round(py/ds), iz = round(pz/ds);
-            int ix = floor(px), iy = floor(py), iz = floor(pz);
+        int ix = floor(px), iy = floor(py), iz = floor(pz);
 
 	    // wrap
 	    ix = (ix + N0) % N0;
 	    iy = (iy + N1) % N1;
-            iz = (iz + N2) % N2;
+        iz = (iz + N2) % N2;
 	   
 	    double dx = px - (double)ix;
 	    double dy = py - (double)iy;
@@ -551,9 +511,10 @@ class ewald {
                         x0 = (x0 % N0 + N0) % N0;
                         y0 = (y0 % N1 + N1) % N1;
                         z0 = (z0 % N2 + N2) % N2;			
-			double W = wx * wy * wz;
-			int local_ix = x0 - static_cast<int>(local_0_start);
-			if (0 <= local_ix && local_ix < static_cast<int>(local_n0)) {
+						
+						double W = wx * wy * wz;
+						int local_ix = x0 - static_cast<int>(local_0_start);
+						if (0 <= local_ix && local_ix < static_cast<int>(local_n0)) {
                 	    double &cx = at(local_ix, y0, z0, 0);
                 	    double &cy = at(local_ix, y0, z0, 1);
                 	    double &cz = at(local_ix, y0, z0, 2);			   
@@ -573,15 +534,13 @@ class ewald {
 	MPI_Allreduce(F_flat_local.data(), F_flat_global.data(), 3 * (int)n, MPI_DOUBLE, MPI_SUM, comm);
 	for (int i = 0; i < n; ++i) {
 	    F_list[i][0] += F_flat_global[3*i + 0];
-            F_list[i][1] += F_flat_global[3*i + 1];
-            F_list[i][2] += F_flat_global[3*i + 2];
+        F_list[i][1] += F_flat_global[3*i + 1];
+        F_list[i][2] += F_flat_global[3*i + 2];
 	}
 	        
         MPI_Allreduce(&real_local, &real_energy, 1, MPI_DOUBLE, MPI_SUM, comm);
         MPI_Allreduce(&rec_local, &rec_energy, 1, MPI_DOUBLE, MPI_SUM, comm);
         MPI_Allreduce(&LJ_local, &LJ_energy, 1, MPI_DOUBLE, MPI_SUM, comm);
-	//rec_energy /= 2;	
-	//double rec_energy_corrected = 0.5 * rec_energy;
         self_energy = 0.0;
         for (size_t ii = 0; ii < q_list.size(); ++ii) {
             self_energy -= q_list[ii] * q_list[ii] * alpha / sqrt(M_PI);
@@ -709,17 +668,18 @@ int main(int argc, char **argv) {
         //self_energy.push_back(f.self_energy);
     
     }  
+	int equil = 1000;
     if (f.rank==0) {
 	std::ofstream energy_file(filename3);
-	for (int i = 1000; i < N-1; i++) {
-	    double delta_E = fabs(energy_list[i] - energy_list[1000]) / fabs(energy_list[1000]);
+	for (int i = equil; i < N-1; i++) {
+	    double delta_E = fabs(energy_list[i] - energy_list[equil]) / fabs(energy_list[equil]);
 	    energy_file << t_list[i] << " ";
 	    energy_file << energy_list[i] << " ";
-	    //energy_file << kinetic_energy[i] << " ";
-	    //energy_file << rec_energy[i] << " ";
-	    //energy_file << real_energy[i] << " ";
-	    //energy_file << LJ_energy[i] << " ";
-	    //energy_file << self_energy[i] << " ";
+	    energy_file << kinetic_energy[i] << " ";
+	    energy_file << rec_energy[i] << " ";
+	    energy_file << real_energy[i] << " ";
+	    energy_file << LJ_energy[i] << " ";
+	    energy_file << self_energy[i] << " ";
 	    energy_file << delta_E << "\n"; 
 	}
     }
