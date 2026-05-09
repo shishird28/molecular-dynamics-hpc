@@ -33,67 +33,53 @@ class ewald {
 	bool ignorereal = false;
 	double a = 5.64 / a0;
 	double L = a*N_cell;
-        double rc = 2*a;
+    double rc = 2*a;
 	double ds = L / N0;
-        double V_cell = pow(L,3);
-        double k = 1; // Coulomb factor in atomic units
+    double V_cell = pow(L,3);
+    double k = 1; // Coulomb factor in atomic units
         
 	// precomputed factors
 	double pref = 1.0 / (V_cell*M_PI);
-        double pre_alpha = (M_PI*M_PI) / (alpha * alpha);	
+    double pre_alpha = (M_PI*M_PI) / (alpha * alpha);	
 	double exp_pref = (2.0 * alpha / sqrt(M_PI));
 	double rc2 = rc*rc;
 	
-/*	double sigma_Cl = 3.85;
-	double sigma_Na = 2.185;
-	double sigma_NaCl = 3.185;
-	vector<double> sigma_list = {sigma_Cl, sigma_Na, sigma_NaCl};
-	double eps_Cl = 0.38;
-        double eps_Na = 0.035;
-        double eps_NaCl = 0.115;
-        vector<double> eps_list = {eps_Cl, eps_Na, eps_NaCl};
-	double invr = 1.0 / r;
-	double sr = sigma * invr;
-	double sr2 = sr*sr;
-	double sr6 = sr2*sr2*sr2;
-	double sr12 = sr6*sr6;
-	//vector<double> sigma_list = {sigma_Cl, sigma_Na, sigma_NaCl};
-	*/
+
 	// vectors
-        vector<vector<double>> cell = {};
+    vector<vector<double>> cell = {};
 	vector<double> q_list = {};
-        vector<double> m_list = {};
+    vector<double> m_list = {};
 	int total;
-        int r_i;
+    int r_i;
 	
 	vector<vector<int>> neighbour_list;
 
-        MPI_Comm comm;
-        int rank, size;
-        ptrdiff_t local_n0;
-        ptrdiff_t local_0_start;
-        ptrdiff_t alloc_local;
-        fftw_complex *dataout, *dataxin, *datayin, *datazin;
-        double *datain, *dataxout, *datayout, *datazout;
+    MPI_Comm comm;
+    int rank, size;
+    ptrdiff_t local_n0;
+    ptrdiff_t local_0_start;
+    ptrdiff_t alloc_local;
+    fftw_complex *dataout, *dataxin, *datayin, *datazin;
+    double *datain, *dataxout, *datayout, *datazout;
 	fftw_plan plan, planx, plany, planz;
 	int N2_half = N2/2 + 1;
 	int N2_pad  = 2 * N2_half;
 
-        ewald(MPI_Comm c = MPI_COMM_WORLD)
+    ewald(MPI_Comm c = MPI_COMM_WORLD)
        	    : comm(c)
 	{
 
             // copy the lattice vectors into a supercell
-	    		double charge = 1;
+	    	double charge = 1;
 			double mass = 1;
 			double N_grid = 2 * N_cell;
 			for (int i = 0; i < N_grid; ++i) {
     			    for (int j = 0; j < N_grid; ++j) {
         			for (int k = 0; k < N_grid; ++k) {
 
-            			    const double ax = 0.5 * a * i;
-            			    const double ay = 0.5 * a * j;
-            		  	    const double az = 0.5 * a * k;
+            			const double ax = 0.5 * a * i;
+            		    const double ay = 0.5 * a * j;
+            	  	    const double az = 0.5 * a * k;
 
 				    if ( (i + j + k) % 2 == 0) {
 				        charge = -.885;
@@ -221,16 +207,16 @@ class ewald {
     ~ewald() {
         fftw_destroy_plan(plan);
         fftw_destroy_plan(planx);
-	fftw_destroy_plan(plany);
-	fftw_destroy_plan(planz);
+		fftw_destroy_plan(plany);
+		fftw_destroy_plan(planz);
         fftw_free(datain);
-	fftw_free(dataout);
+		fftw_free(dataout);
         fftw_free(dataxin);
         fftw_free(datayin);
         fftw_free(datazin);
-	fftw_free(dataxout);
-	fftw_free(datayout);
-	fftw_free(datazout);
+		fftw_free(dataxout);
+		fftw_free(datayout);
+		fftw_free(datazout);
     }
 
 
@@ -278,7 +264,7 @@ class ewald {
             j1 = (j1 + N1) % N1;
             k1 = (k1 + N2) % N2;
             
-	    double di = i0 - (double)i1;
+	    	double di = i0 - (double)i1;
             double dj = j0 - (double)j1;
             double dk = k0 - (double)k1;
 
@@ -474,7 +460,7 @@ class ewald {
                 if (r<rc) {
                     double erfc_part = erfc(alpha * r);
                     double exp_part = exp_pref * exp(-alpha*alpha*r2);
-		    double F_mag = k * q_i * q_j * (erfc_part / r2 + exp_part / r);
+		    		double F_mag = k * q_i * q_j * (erfc_part / r2 + exp_part / r);
 
                     Fx += F_mag * unit_r[0];
                     Fy += F_mag * unit_r[1];
@@ -498,14 +484,14 @@ class ewald {
                     }
                     double LJ_mag = (48/r) * epsilon *  ( pow(sigma/r, 12) - 0.5*pow(sigma/r,6) );
                     //double LJ_mag = (48/r) * epsilon * ( sr12 - 0.5 * sr6);
-		    Fx += unit_r[0] * LJ_mag;
+		    		Fx += unit_r[0] * LJ_mag;
                     Fy += unit_r[1] * LJ_mag;
                     Fz += unit_r[2] * LJ_mag;
                 }
 
                 F_flat_local[3*i + 0] += Fx/m_i;
-		F_flat_local[3*i + 1] += Fy/m_i;
-		F_flat_local[3*i + 2] += Fz/m_i;
+				F_flat_local[3*i + 1] += Fy/m_i;
+				F_flat_local[3*i + 2] += Fz/m_i;
 	    }
 	}
 
@@ -625,42 +611,28 @@ int main(int argc, char **argv) {
     v_list.resize(size);
     v0_list.resize(size);
     
-    //mt19937 rng( random_device{}() );         // Mersenne Twister engine
-    //normal_distribution<double> dist(0.0, 0.1);    // Gaussian Distribution
-    
     // set initial velocities
     double vcf_0_Na = 0;
     double vcf_0_Cl = 0;
     if (f.rank == 0) {
         for (int i = 0; i < size; i++) {
-            //double vx = dist(rng);
-            //double vy = dist(rng);
-            //double vz = dist(rng);
             
 	    // spherical angles
 	    double phi = M_PI * ((double)rand()) / RAND_MAX;
 	    double theta = 2 * M_PI * ((double)rand()) / RAND_MAX;
 	    
 	    double vx = v * sin(phi) * cos(theta);
-            double vy = v * sin(phi) * sin(theta);
-            double vz = v * cos(phi);
-            
-	    // if (i==f.get_middle_idx()) {
-            //     vx = 0.0;
-            //     vy = 0.0;
-            //     vz = 0.0;
-            // }
+        double vy = v * sin(phi) * sin(theta);
+        double vz = v * cos(phi);
 
-            v_list[i] = {vx, vy, vz};
-            v0_list[i] = {vx, vy, vz};
+        v_list[i] = {vx, vy, vz};
+        v0_list[i] = {vx, vy, vz};
 	    
 	    double vsq = vx*vx + vy*vy + vz*vz;
             if (f.q_list[i] < 0) vcf_0_Cl += vsq;
 	    else vcf_0_Na += vsq;
-            //pos[i][0] += dist(rng);
-            //pos[i][1] += dist(rng);
-            //pos[i][2] += dist(rng);
         }
+		
     vcf_0_Na /= (size*0.5);
     vcf_0_Cl /= (size*0.5);
     vcf_Na[0][0] = vcf_0_Na;
@@ -668,10 +640,6 @@ int main(int argc, char **argv) {
     }
     
     MPI_Bcast(v_list.data(), 3 * size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    
-    //vector<vector<double>> p_list;
-    //p_list.assign(size, vector<double>(3, 0.0));
-    //std::ofstream force_file(filename2);
     
     std::ofstream traj_file(filename); 
     //std::ofstream vel_file(filename4);
