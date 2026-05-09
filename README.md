@@ -34,4 +34,5 @@ mpirun -np 32 ./filename
 ## Outputs
 
 - PME_traj_v1.cpp & direct_ewald_vfinal.cpp: .xyz file of ion positions at each time step allowing visualisation of trajectories in MD visualisers such as VMD.
-- PME_traj_energydrift.cpp: .dat file plotting fractional energy drift from thermalisation point against time
+- PME_traj_energydrift.cpp: .dat file plotting fractional energy drift from thermalisation point against time.
+- PME_traj_VCF.cpp: .dat file plotting Velocity Autocorrelation functions of Na and Cl seperately.
